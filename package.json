@@ -1,0 +1,23 @@
+{
+  "name": "rules-engine",
+  "version": "1.0.0",
+  "description": "Piece of code to perform a rules engine to assess an input and generate an output result",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "rules",
+    "engine",
+    "javascript"
+  ],
+  "author": "brunorota0",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "joi": "^17.9.2",
+    "json-rules-engine": "^6.2.0",
+    "lodash": "^4.17.21"
+  }
+}
