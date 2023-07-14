@@ -7,10 +7,12 @@ const {
   validateRule,
   getConditionsFromResult,
 } = require("./methodology.service.js");
-const { partition } = require("lodash");
+const { partition, forEach } = require("lodash");
 const { assetsData } = require("./assets-data.js");
 const { Promise } = require("bluebird");
 const { engineClassifications } = require("./constants.js");
+const fs = require("fs");
+const path = require("path");
 
 const main = async () => {
   console.time();
@@ -195,6 +197,22 @@ const main = async () => {
     } else {
       classifications[classificationsMapping[NOT_PASS]].push(result);
     }
+  });
+
+  // STEP 10 [EXTRA] - output files
+  const outputDir = path.join(__dirname, "../output");
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  const dataToGenerateFiles = [
+    { name: "result", object: classifications },
+    { name: "rules", object: rules },
+    { name: "methodology", object: methodology },
+    { name: "root_methodology", object: rootMethodology },
+  ];
+
+  dataToGenerateFiles.forEach((data) => {
+    const filePath = path.join(outputDir, `${data.name}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(data.object, null, 2));
   });
 
   console.timeEnd();

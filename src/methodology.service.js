@@ -80,6 +80,7 @@ exports.updateMethodology = (obj, newRule) => {
     const value = {
       ...newRule.value,
       operator: getBiDirectionalMapping(operator, operatorsMapping),
+      originalOperator: operator,
     };
 
     step.rules.forEach((rule) => {
@@ -137,7 +138,7 @@ exports.generateRulesSet = ({ methodology }) => {
               value: value.value,
               path: `$.${value.code}`,
               code: value.code,
-              originalOperator: value.operator,
+              originalOperator: value.originalOperator,
             };
           })
       )
