@@ -16,7 +16,7 @@ const main = async () => {
   // STEP 1 - Get root methodology
   const rootMethodology = getRootMethodology();
 
-  // STEP 2 - Create methodology
+  // STEP 2 - Get methodology
   const methodology = getMethodology();
 
   // Declare new rules (Test purposes)
@@ -88,7 +88,7 @@ const main = async () => {
 
   // STEP 5 - Generate set of rules from a methodology
   const rules = generateRulesSet({ methodology });
-  console.log(JSON.stringify(rules));
+
   // STEP 6 - Setup the rule engine
   const engine = new Engine();
 
@@ -116,7 +116,7 @@ const main = async () => {
         // const sortedAssetsByProp = sortBy(
         //   index / industry / fund,
         //   (a) => a[prop]
-        // );
+        // ); // TODO: Nice to have: store in redis
 
         const percentileIndex =
           Math.floor(sortedAssetsByProp.length * (threshold / 100)) - 1;
@@ -131,7 +131,7 @@ const main = async () => {
 
   // Step 8 - [RUN ENGINE] For each asset separately
   const engineOutput = await Promise.map(
-    assetsData,
+    assetsData, // TODO: ingest fund instruments
     async (asset) => {
       const { results, failureResults } = await engine.run({ asset });
       const result = failureResults.length === 0;
@@ -162,8 +162,8 @@ const main = async () => {
       notPassConditions: o.notPassConditions,
     }));
 
-  console.log(JSON.stringify(sustainableAssets));
-  console.log(JSON.stringify(nonSustainableAssets));
+  console.log({ sustainableAssets: JSON.stringify(sustainableAssets) });
+  console.log({ nonSustainableAssets: JSON.stringify(nonSustainableAssets) });
 
   console.timeEnd();
 };

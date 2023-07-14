@@ -1,6 +1,10 @@
 const Joi = require("joi");
 const { rootMethodology } = require("./dsl");
-const { customOperatorModifiers, operatorsMapping } = require("./constants");
+const {
+  customOperatorModifiers,
+  operatorsMapping,
+  engineClassifications,
+} = require("./constants");
 const { validationByType } = require("./validationSchema");
 const { getBiDirectionalMapping } = require("./utils");
 
@@ -175,10 +179,11 @@ exports.getRootMethodology = () => {
         operators: ["within", "more", "between"],
       },
     ],
+    engineClassifications,
   };
 
   this.populateParams(rootMethodology, params, "$params.");
-
+  console.log(JSON.stringify(rootMethodology));
   return rootMethodology;
 };
 
@@ -190,10 +195,20 @@ exports.populateParams = (jsonObj, params, paramsPrefix) => {
       typeof jsonObj[key] === "string" &&
       jsonObj[key].startsWith(paramsPrefix)
     ) {
-      let paramName = jsonObj[key].split(".")[1];
-      if (params.hasOwnProperty(paramName)) {
-        jsonObj[key] = params[paramName];
-      }
+      const paramName = jsonObj[key].replace(paramsPrefix, "");
+      const keys = paramName.split(".");
+
+      // iterate over nested keys
+      let tempParams = params;
+      keys.forEach((k) => {
+        if (tempParams.hasOwnProperty(k)) {
+          tempParams = tempParams[k];
+        } else {
+          throw new Error(`Key "${k}" not found in the params`);
+        }
+      });
+
+      jsonObj[key] = tempParams;
     }
   }
 };

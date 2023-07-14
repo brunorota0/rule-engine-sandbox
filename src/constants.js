@@ -8,3 +8,9 @@ exports.operatorsMapping = {
   within: "within",
   equal: "equal",
 };
+
+exports.engineClassifications = {
+  PASS: "pass",
+  NOT_PASS: "not_pass",
+  NONE: "none",
+};
