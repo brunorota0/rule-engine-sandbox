@@ -69,7 +69,6 @@ exports.assetsData = [
     scope_1_emissions: 10,
     scope_2_emissions: 60,
     scope_3_emissions: 30,
-    activities_affecting_biodiversity: true,
   },
   {
     id: 10,
@@ -77,6 +76,6 @@ exports.assetsData = [
     scope_1_emissions: 100,
     scope_2_emissions: 25,
     scope_3_emissions: 55,
-    activities_affecting_biodiversity: true,
+    activities_affecting_biodiversity: null,
   },
 ];

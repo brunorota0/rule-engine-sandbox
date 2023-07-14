@@ -7,9 +7,10 @@ const {
   validateRule,
   getConditionsFromResult,
 } = require("./methodology.service.js");
-const { pick } = require("lodash");
+const { partition } = require("lodash");
 const { assetsData } = require("./assets-data.js");
 const { Promise } = require("bluebird");
+const { engineClassifications } = require("./constants.js");
 
 const main = async () => {
   console.time();
@@ -31,16 +32,16 @@ const main = async () => {
         value: false,
       },
     },
-    // {
-    //   step_code: "passes_negative_screening",
-    //   category_code: "principal_adverse_impacts",
-    //   rule_code: "pais_upon_threshold",
-    //   value: {
-    //     code: "scope_1_emissions",
-    //     value: 60,
-    //     operator: "less",
-    //   },
-    // },
+    {
+      step_code: "passes_negative_screening",
+      category_code: "principal_adverse_impacts",
+      rule_code: "pais_upon_threshold",
+      value: {
+        code: "scope_1_emissions",
+        value: 60,
+        operator: "less",
+      },
+    },
     // {
     //   step_code: "passes_negative_screening",
     //   category_code: "principal_adverse_impacts",
@@ -129,41 +130,72 @@ const main = async () => {
     }
   });
 
+  const getConditions = ({ asset, results, failureResults }) => {
+    const { PASS, NOT_PASS, NONE } = engineClassifications;
+
+    const failures = getConditionsFromResult(failureResults);
+    const [skippedConditions, failureConditions] = partition(
+      failures,
+      (condition) => asset[condition.code] === null
+    );
+
+    return {
+      [PASS]: getConditionsFromResult(results),
+      [NOT_PASS]: failureConditions,
+      [NONE]: skippedConditions,
+    };
+  };
+
   // Step 8 - [RUN ENGINE] For each asset separately
   const engineOutput = await Promise.map(
     assetsData, // TODO: ingest fund instruments
     async (asset) => {
       const { results, failureResults } = await engine.run({ asset });
-      const result = failureResults.length === 0;
 
       return {
         asset,
-        result,
-        passConditions: getConditionsFromResult(results),
-        notPassConditions: getConditionsFromResult(failureResults),
+        conditions: getConditions({ asset, results, failureResults }),
       };
     },
     { concurrency: 10 }
   );
 
-  const sustainableAssets = engineOutput
-    .filter((assetOutput) => assetOutput.result)
-    .map((o) => ({
-      asset: pick(o.asset, ["id", "name"]),
-      passConditions: o.passConditions,
-      notPassConditions: o.notPassConditions,
-    }));
+  // STEP 9 - Classify results
+  const { PASS, NOT_PASS, NONE } = engineClassifications;
 
-  const nonSustainableAssets = engineOutput
-    .filter((assetOutput) => !assetOutput.result)
-    .map((o) => ({
-      asset: pick(o.asset, ["id", "name"]),
-      passConditions: o.passConditions,
-      notPassConditions: o.notPassConditions,
-    }));
+  const classificationsMapping = rootMethodology.classifications.reduce(
+    (obj, value) => {
+      obj[value.condition] = value.code;
+      return obj;
+    },
+    {}
+  );
 
-  console.log({ sustainableAssets: JSON.stringify(sustainableAssets) });
-  console.log({ nonSustainableAssets: JSON.stringify(nonSustainableAssets) });
+  const classifications = Object.values(classificationsMapping).reduce(
+    (obj, value) => {
+      obj[value] = [];
+      return obj;
+    },
+    {}
+  );
+
+  engineOutput.forEach((result) => {
+    const hasSkippedConditions = result.conditions[NONE].length > 0;
+    const hasFailedConditions = result.conditions[NOT_PASS].length > 0;
+
+    const success = !hasFailedConditions && !hasSkippedConditions;
+
+    if (success) {
+      classifications[classificationsMapping[PASS]].push(result);
+      return;
+    }
+
+    if (hasSkippedConditions) {
+      classifications[classificationsMapping[NONE]].push(result);
+    } else {
+      classifications[classificationsMapping[NOT_PASS]].push(result);
+    }
+  });
 
   console.timeEnd();
 };
