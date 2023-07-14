@@ -6,6 +6,7 @@ exports.assetsData = [
     scope_2_emissions: 10,
     scope_3_emissions: 30,
     activities_affecting_biodiversity: false,
+    total_share_non_renewable_energy_consumption: 40,
   },
   {
     id: 2,
@@ -14,6 +15,7 @@ exports.assetsData = [
     scope_2_emissions: 50,
     scope_3_emissions: 45,
     activities_affecting_biodiversity: true,
+    total_share_non_renewable_energy_consumption: 70,
   },
   {
     id: 3,
@@ -22,6 +24,7 @@ exports.assetsData = [
     scope_2_emissions: 100,
     scope_3_emissions: 40,
     activities_affecting_biodiversity: true,
+    total_share_non_renewable_energy_consumption: 90,
   },
   {
     id: 4,
@@ -30,6 +33,7 @@ exports.assetsData = [
     scope_2_emissions: 30,
     scope_3_emissions: 10,
     activities_affecting_biodiversity: false,
+    total_share_non_renewable_energy_consumption: 10,
   },
   {
     id: 5,
@@ -38,6 +42,7 @@ exports.assetsData = [
     scope_2_emissions: 70,
     scope_3_emissions: 60,
     activities_affecting_biodiversity: false,
+    total_share_non_renewable_energy_consumption: 15,
   },
   {
     id: 6,
@@ -46,6 +51,7 @@ exports.assetsData = [
     scope_2_emissions: 90,
     scope_3_emissions: 60,
     activities_affecting_biodiversity: false,
+    total_share_non_renewable_energy_consumption: 55,
   },
   {
     id: 7,
@@ -54,6 +60,7 @@ exports.assetsData = [
     scope_2_emissions: 35,
     scope_3_emissions: 15,
     activities_affecting_biodiversity: true,
+    total_share_non_renewable_energy_consumption: 45,
   },
   {
     id: 8,
@@ -62,6 +69,7 @@ exports.assetsData = [
     scope_2_emissions: 10,
     scope_3_emissions: 25,
     activities_affecting_biodiversity: false,
+    total_share_non_renewable_energy_consumption: 75,
   },
   {
     id: 9,
@@ -69,6 +77,7 @@ exports.assetsData = [
     scope_1_emissions: 10,
     scope_2_emissions: 60,
     scope_3_emissions: 30,
+    total_share_non_renewable_energy_consumption: null,
   },
   {
     id: 10,
@@ -77,5 +86,6 @@ exports.assetsData = [
     scope_2_emissions: 25,
     scope_3_emissions: 55,
     activities_affecting_biodiversity: null,
+    total_share_non_renewable_energy_consumption: 25,
   },
 ];

@@ -1,12 +1,9 @@
 const Joi = require("joi");
 const { rootMethodology } = require("./dsl");
-const {
-  customOperatorModifiers,
-  operatorsMapping,
-  engineClassifications,
-} = require("./constants");
+const { operatorsMapping, engineClassifications } = require("./constants");
 const { validationByType } = require("./validationSchema");
 const { getBiDirectionalMapping } = require("./utils");
+const { customOperatorModifiers } = require("./custom-operators");
 
 exports.validateRule = ({ newRule, root }) => {
   if (!newRule || !newRule.value) throw new Error("The new rule is empty");
@@ -53,7 +50,7 @@ const validateOperator = ({ rule, newRule }) => {
   );
   if (!operator) throw new Error("The operator is not a valid operator");
 
-  const option = rule.options.find((o) => o.code);
+  const option = rule.options.find((o) => o.code === newRule.value.code);
   const operatorSchema = Joi.string().valid(...option.operators);
   const operatorValidation = operatorSchema.validate(newRule.value.operator);
   if (operatorValidation.error)
@@ -62,7 +59,9 @@ const validateOperator = ({ rule, newRule }) => {
 
 const validateValue = ({ rule, newRule }) => {
   const { type } = rule;
-  const valueSchema = validationByType[type];
+  const valueSchema = validationByType[type]({
+    operator: newRule.value.operator,
+  });
   if (!valueSchema) throw new Error("The type of the input is not valid");
 
   const valueValidation = valueSchema.validate(newRule.value.value);

@@ -7,12 +7,13 @@ const {
   validateRule,
   getConditionsFromResult,
 } = require("./methodology.service.js");
-const { partition, forEach } = require("lodash");
+const { partition } = require("lodash");
 const { assetsData } = require("./assets-data.js");
 const { Promise } = require("bluebird");
 const { engineClassifications } = require("./constants.js");
 const fs = require("fs");
 const path = require("path");
+const { customOperators } = require("./custom-operators.js");
 
 const main = async () => {
   console.time();
@@ -39,11 +40,24 @@ const main = async () => {
       category_code: "principal_adverse_impacts",
       rule_code: "pais_upon_threshold",
       value: {
-        code: "scope_1_emissions",
-        value: 60,
-        operator: "less",
+        code: "total_share_non_renewable_energy_consumption",
+        operator: "between",
+        value: {
+          from: 10,
+          to: 50,
+        },
       },
     },
+    // {
+    //   step_code: "passes_negative_screening",
+    //   category_code: "principal_adverse_impacts",
+    //   rule_code: "pais_upon_threshold",
+    //   value: {
+    //     code: "scope_1_emissions",
+    //     value: 60,
+    //     operator: "less",
+    //   },
+    // },
     // {
     //   step_code: "passes_negative_screening",
     //   category_code: "principal_adverse_impacts",
@@ -108,28 +122,20 @@ const main = async () => {
   });
 
   // STEP 7 - Create custom operators
+
   rules.forEach((rule) => {
-    if (rule.operator.includes("within")) {
-      engine.addOperator(rule.operator, (assetValue, threshold) => {
-        const prop = rule.operator.replace("within-", "");
+    const customOperatorsKeys = Object.keys(customOperators);
 
-        // TODO: use brenchamark assets
-        return true;
+    let customOperator;
+    customOperatorsKeys.forEach((key) => {
+      if (rule.operator.includes(key)) {
+        customOperator = customOperators[key];
+      }
+    });
 
-        // const sortedAssetsByProp = sortBy(
-        //   index / industry / fund,
-        //   (a) => a[prop]
-        // ); // TODO: Nice to have: store in redis
+    if (!customOperator) return;
 
-        const percentileIndex =
-          Math.floor(sortedAssetsByProp.length * (threshold / 100)) - 1;
-
-        const valueWithinThrehold = (val, arr) =>
-          val <= arr[percentileIndex][prop];
-
-        return valueWithinThrehold(assetValue, sortedAssetsByProp);
-      });
-    }
+    engine.addOperator(rule.operator, customOperator);
   });
 
   const getConditions = ({ asset, results, failureResults }) => {
