@@ -19,14 +19,17 @@ exports.rootMethodology = {
   classifications: [
     {
       code: "sustainable",
+      name: "Sustainable",
       condition: "$params.engineClassifications.PASS",
     },
     {
       code: "not_sustainable",
+      name: "Not Sustainable",
       condition: "$params.engineClassifications.NOT_PASS",
     },
     {
       code: "uncovered",
+      name: "Uncovered",
       condition: "$params.engineClassifications.NONE",
     },
   ],
