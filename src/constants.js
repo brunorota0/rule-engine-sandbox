@@ -4,6 +4,8 @@ exports.operatorsMapping = {
   within: "within",
   equal: "equal",
   between: "between",
+  above: "above",
+  max: "max",
 };
 
 exports.engineClassifications = {

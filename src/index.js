@@ -59,6 +59,16 @@ const main = async () => {
         },
       },
     },
+    {
+      step_code: "passes_negative_screening",
+      category_code: "principal_adverse_impacts",
+      rule_code: "pais_upon_threshold",
+      value: {
+        code: "scope_1_emissions",
+        value: 60,
+        operator: "max",
+      },
+    },
     // {
     //   step_code: "passes_negative_screening",
     //   category_code: "principal_adverse_impacts",
@@ -133,7 +143,6 @@ const main = async () => {
   });
 
   // STEP 7 - Create custom operators
-
   rules.forEach((rule) => {
     const customOperatorsKeys = Object.keys(customOperators);
 

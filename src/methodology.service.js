@@ -166,7 +166,7 @@ exports.getRootMethodology = () => {
       {
         name: "(GHG) Scope 1 emissions",
         code: "scope_1_emissions",
-        operators: ["within", "less"],
+        operators: ["within", "less", "max"],
       },
       {
         name: "(GHG) Scope 2 emissions",

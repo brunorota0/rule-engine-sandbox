@@ -25,4 +25,10 @@ exports.customOperators = {
     const { from, to } = bounds;
     return value >= from && value <= to;
   },
+  above: (value, max) => {
+    return value <= max;
+  },
+  max: (value, max) => {
+    return value <= max;
+  },
 };
