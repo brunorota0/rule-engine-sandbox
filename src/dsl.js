@@ -37,20 +37,24 @@ exports.rootMethodology = {
     {
       code: "passes_negative_screening",
       name: "Passes Negative Screening",
-      rules: [
+      categories: [
         {
-          code: "pais_excluded",
-          name: "Which of these PAIs must be excluded?",
-          category_code: "principal_adverse_impacts",
-          type: "select",
-          options: "$params.qualitativePAIs",
-        },
-        {
-          name: "Principal Adverse Impacts upon a threshold",
-          code: "pais_upon_threshold",
-          category_code: "principal_adverse_impacts",
-          type: "select_threshold",
-          options: "$params.quantitativePAIs",
+          code: "principal_adverse_impacts",
+          rules: [
+            {
+              code: "pais_excluded",
+              name: "Which of these PAIs must be excluded?",
+              type: "select",
+              options: "$params.qualitativePAIs",
+            },
+            {
+              dependency_rule: "pais_excluded",
+              name: "Principal Adverse Impacts upon a threshold",
+              code: "pais_upon_threshold",
+              type: "select_threshold",
+              options: "$params.quantitativePAIs",
+            },
+          ],
         },
       ],
     },

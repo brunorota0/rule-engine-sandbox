@@ -24,6 +24,17 @@ const main = async () => {
   const methodology = getMethodology();
 
   // Declare new rules (Test purposes)
+
+  // "operators": [
+  //   "within-lowest",
+  //   "within-largest",
+  //   "more",
+  //   "less",
+  //   "between",
+  //   "above",
+  //   "max"
+  // ]
+
   const newRules = [
     {
       step_code: "passes_negative_screening",

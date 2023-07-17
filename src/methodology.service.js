@@ -4,6 +4,7 @@ const { operatorsMapping, engineClassifications } = require("./constants");
 const { validationByType } = require("./validationSchema");
 const { getBiDirectionalMapping } = require("./utils");
 const { customOperatorModifiers } = require("./custom-operators");
+const { isNil } = require("lodash");
 
 exports.validateRule = ({ newRule, root }) => {
   if (!newRule || !newRule.value) throw new Error("The new rule is empty");
@@ -20,16 +21,17 @@ exports.validateRule = ({ newRule, root }) => {
 
 const getRuleFromRootMethodology = ({ newRule, root }) => {
   let rule;
-  root.steps.forEach((step) => {
-    if (step.code !== newRule.step_code) return;
+  root.steps.forEach((s) => {
+    if (s.code !== newRule.step_code) return;
 
-    step.rules.forEach((r) => {
-      if (
-        r.category_code === newRule.category_code &&
-        r.code === newRule.rule_code
-      ) {
-        rule = r;
-      }
+    s.categories.forEach((c) => {
+      if (c.code !== newRule.category_code) return;
+
+      c.rules.forEach((r) => {
+        if (r.code === newRule.rule_code) {
+          rule = r;
+        }
+      });
     });
   });
 
@@ -82,13 +84,14 @@ exports.updateMethodology = (obj, newRule) => {
       originalOperator: operator,
     };
 
-    step.rules.forEach((rule) => {
-      if (
-        rule.category_code === newRule.category_code &&
-        rule.code === newRule.rule_code
-      ) {
-        // add the new rule as the only one
-        if (!rule.value) {
+    step.categories.forEach((category) => {
+      if (category.code !== newRule.category_code) return;
+
+      category.rules.forEach((rule) => {
+        if (rule.code !== newRule.rule_code) return;
+
+        // if the values doesn't exist, add the new rule as the only one
+        if (isNil(rule.value) || rule.value.length === 0) {
           updateResult = true;
           rule.value = [value];
           return;
@@ -108,7 +111,7 @@ exports.updateMethodology = (obj, newRule) => {
           rule.value.push(value);
           updateResult = true;
         }
-      }
+      });
     });
   });
 
@@ -118,31 +121,33 @@ exports.updateMethodology = (obj, newRule) => {
 exports.generateRulesSet = ({ methodology }) => {
   return methodology.steps
     .map((step) =>
-      step.rules.map(
-        (rule) =>
-          rule.value &&
-          rule.value.length > 0 &&
-          rule.value.map((value) => {
-            let operator = value.operator;
+      step.categories.map((category) =>
+        category.rules.map(
+          (rule) =>
+            rule.value &&
+            rule.value.length > 0 &&
+            rule.value.map((value) => {
+              let operator = value.operator;
 
-            if (Object.keys(customOperatorModifiers).includes(operator)) {
-              operator = customOperatorModifiers[operator]({
-                params: { code: value.code },
-              });
-            }
+              if (Object.keys(customOperatorModifiers).includes(operator)) {
+                operator = customOperatorModifiers[operator]({
+                  params: { code: value.code },
+                });
+              }
 
-            return {
-              fact: "asset",
-              operator,
-              value: value.value,
-              path: `$.${value.code}`,
-              code: value.code,
-              originalOperator: value.originalOperator,
-            };
-          })
+              return {
+                fact: "asset",
+                operator,
+                value: value.value,
+                path: `$.${value.code}`,
+                code: value.code,
+                originalOperator: value.originalOperator,
+              };
+            })
+        )
       )
     )
-    .flat(2)
+    .flat(3) // max deep to reach rules
     .filter((r) => r);
 };
 
@@ -183,7 +188,7 @@ exports.getRootMethodology = () => {
   };
 
   this.populateParams(rootMethodology, params, "$params.");
-  console.log(JSON.stringify(rootMethodology));
+
   return rootMethodology;
 };
 
@@ -227,9 +232,11 @@ exports.getMethodology = () => {
     },
     steps: rootMethodology.steps.map((step) => ({
       code: step.code,
-      rules: step.rules.map((rule) => ({
-        code: rule.code,
-        category_code: rule.category_code,
+      categories: step.categories.map((category) => ({
+        code: category.code,
+        rules: category.rules.map((rule) => ({
+          code: rule.code,
+        })),
       })),
     })),
   };
