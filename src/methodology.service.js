@@ -71,18 +71,10 @@ const validateValue = ({ rule, newRule }) => {
     throw new Error("The value is not valid for this option");
 };
 
-exports.updateMethodology = (obj, newRule) => {
+exports.updateMethodology = ({ methodology, newRule, del = false }) => {
   let updateResult = false;
-  obj.steps.forEach((step) => {
+  methodology.steps.forEach((step) => {
     if (step.code !== newRule.step_code) return;
-
-    // new value with the operator mapped
-    const operator = newRule.value.operator;
-    const value = {
-      ...newRule.value,
-      operator: getBiDirectionalMapping(operator, operatorsMapping),
-      originalOperator: operator,
-    };
 
     step.categories.forEach((category) => {
       if (category.code !== newRule.category_code) return;
@@ -90,30 +82,63 @@ exports.updateMethodology = (obj, newRule) => {
       category.rules.forEach((rule) => {
         if (rule.code !== newRule.rule_code) return;
 
-        // if the values doesn't exist, add the new rule as the only one
-        if (isNil(rule.value) || rule.value.length === 0) {
+        // delete rule
+        if (del) {
+          rule.value = deleteRuleFromValue({ ruleToDelete: newRule, rule });
           updateResult = true;
-          rule.value = [value];
           return;
         }
 
-        if (rule.value.some((v) => v.code === value.code)) {
-          // replace the existent rule
-          rule.value = rule.value.map((v) => {
-            if (v.code === value.code) {
-              updateResult = true;
-              return value;
-            }
-            return v;
-          });
-        } else {
-          // push the value in the rule
-          rule.value.push(value);
-          updateResult = true;
-        }
+        // add rule
+        updateResult = addRuleToValue({ newRule, rule });
       });
     });
   });
+
+  return updateResult;
+};
+
+const deleteRuleFromValue = ({ ruleToDelete, rule }) => {
+  if (isNil(rule.value) || rule.value.length === 0) return;
+
+  if (rule.value.some((v) => v.code === ruleToDelete.code)) {
+    return rule.value.filter((v) => v.code !== ruleToDelete.code);
+  }
+};
+
+const addRuleToValue = ({ newRule, rule }) => {
+  let updateResult;
+
+  // new value with the operator mapped
+  const operator = newRule.value.operator;
+  const value = {
+    ...newRule.value,
+    operator: getBiDirectionalMapping(operator, operatorsMapping),
+    originalOperator: operator,
+  };
+
+  // if the values doesn't exist, add the new rule as the only one
+  if (isNil(rule.value) || rule.value.length === 0) {
+    updateResult = true;
+    rule.value = [value];
+    return;
+  }
+
+  // check if the same rule already exists
+  if (rule.value.some((v) => v.code === value.code)) {
+    // replace the existent rule
+    rule.value = rule.value.map((v) => {
+      if (v.code === value.code) {
+        updateResult = true;
+        return value;
+      }
+      return v;
+    });
+  } else {
+    // push the value in the rule
+    rule.value.push(value);
+    updateResult = true;
+  }
 
   return updateResult;
 };

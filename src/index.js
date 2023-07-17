@@ -66,19 +66,9 @@ const main = async () => {
       value: {
         code: "scope_1_emissions",
         value: 60,
-        operator: "max",
+        operator: "less",
       },
     },
-    // {
-    //   step_code: "passes_negative_screening",
-    //   category_code: "principal_adverse_impacts",
-    //   rule_code: "pais_upon_threshold",
-    //   value: {
-    //     code: "scope_1_emissions",
-    //     value: 60,
-    //     operator: "less",
-    //   },
-    // },
     // {
     //   step_code: "passes_negative_screening",
     //   category_code: "principal_adverse_impacts",
@@ -111,6 +101,13 @@ const main = async () => {
     // },
   ];
 
+  const ruleToDelete = {
+    step_code: "passes_negative_screening",
+    category_code: "principal_adverse_impacts",
+    rule_code: "pais_upon_threshold",
+    code: "scope_1_emissions",
+  };
+
   // STEP 3 - Validate new rules
   newRules.forEach((newRule) => {
     validateRule({
@@ -121,8 +118,11 @@ const main = async () => {
 
   // STEP 4 - Update the methodology
   newRules.forEach((newRule) => {
-    updateMethodology(methodology, newRule);
+    updateMethodology({ methodology, newRule });
   });
+
+  // delete rules
+  updateMethodology({ methodology, newRule: ruleToDelete, del: true });
 
   // STEP 5 - Generate set of rules from a methodology
   const rules = generateRulesSet({ methodology });
